@@ -9,6 +9,7 @@ library(glue)
 library(geoChronR)
 library(vegan)
 library(ape)
+library(Lakes380DataTools)
 
 
 #1. Load in the LiPD file you want to update

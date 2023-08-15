@@ -1,3 +1,15 @@
+getVersion <- function(L){
+  version <- as.numeric_version(purrr::map_chr(L$changelog,"version")) %>%
+    max() %>%
+    as.character()
+
+  if(length(version)==0){
+    version <- "0.0.0"
+  }
+
+  return(version)
+}
+
 #' Update all the age colums in measurement tables with a summary table
 #'
 #' @param L a lipd object
