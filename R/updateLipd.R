@@ -18,6 +18,9 @@ updateLipdFromSpreadsheet <- function(L,path){
       thisTable <- L$paleoData[[p]]$measurementTable[[m]]
       #match to the tableId
       print(glue::glue("Checking table {thisTable$tableId}..."))
+      if(!any("tableId" %in% names(thisTable))){
+        thisTable$tableId <- thisTable$tableName
+      }
 
       ws <- which(startsWith(thisTable$tableId,prefix = sn))
       if(length(ws) == 1){
@@ -31,8 +34,20 @@ updateLipdFromSpreadsheet <- function(L,path){
           stop("It looks like there are duplicated column names in the excel spreadsheet.")
         }
 
+        #look to see if it looks like a rotated eDNA table
+        if(sum(grepl(pattern = "sample[0-9]",excelVarNames)) > 2){
+          rotSheet <- t(thisSheet[,-1]) %>% as.data.frame()
+          names(rotSheet) <- thisSheet$variableName
+          thisSheet <- rotSheet
+          excelVarNames <- names(thisSheet) %>%
+            stringr::str_remove(pattern = "\n") %>%
+            stringr::str_split(pattern = " \\(") %>%
+            purrr::map_chr(1)
+        }
+
       }else{
-        stop("The paleo measurement table doesn't seem to be in the excel file")
+        warning(glue::glue("The paleo measurement table '{thisTable$tableId}' doesn't seem to be in the excel file, skipping..."))
+        next
       }
 
       #now loop through the LiPD columns, and compare to the table, update as needed.
@@ -44,7 +59,9 @@ updateLipdFromSpreadsheet <- function(L,path){
         #find corresponding spreadsheet column
         coli <- which(excelVarNames == thisColumn$variableName)
         if(length(coli) == 0){
-          print("no match")
+
+
+          stop("no match")
         }
 
 
@@ -130,12 +147,12 @@ updateLipdFromSpreadsheet <- function(L,path){
 
   #see if any tables remain in the spreadsheet
 
-  notUsed <- sn[!startsWith(usedSheet,prefix = sn)]
+  notUsed <- sn[!map_lgl(sn,\(x) any(startsWith(usedSheet,prefix = x)))]
   paln <- length(L$paleoData)
   tabn <- length(L$paleoData[[paln]]$measurementTable)
 
 
-  if(!is.na(notUsed)){#try to add any unused sheets
+  if(any(!is.na(notUsed))){#try to add any unused sheets
     for(nu in notUsed){
       palnum <- ifelse(paln > tabn,paln + 1,paln)
       tabnum <- ifelse(paln > tabn,1,tabn + 1)
