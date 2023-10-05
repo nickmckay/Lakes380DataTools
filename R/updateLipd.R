@@ -254,8 +254,11 @@ createColumn <- function(L,
       stop("You must enter a variableName for this column")
     }
 
-    if(variableName %in% vn){
-      stop(glue::glue("The variableName {variableName} is already present in the table. Please enter a new one."))
+    vnc <- 1
+    while(variableName %in% vn){
+      variableName <- paste0(variableName,vnc)
+      vnc <- vnc + 1
+      #stop(glue::glue("The variableName {variableName} is already present in the table. Please enter a new one."))
     }
 
     #check units

@@ -98,6 +98,12 @@ prepTable <- function(tab){
 
 }
 
+#' Export a lipd object to excel
+#'
+#' @param L a LiPD object
+#' @param outname name of excel file
+#'
+#' @export
 lipd2excel <- function(L,outname = paste0(L$dataSetName,"-v",getVersion(L),".xlsx")){
 
 #write out a spreadsheet
